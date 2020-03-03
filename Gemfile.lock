@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rpi_gpio (0.3.3)
+    spi (0.1.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rpi_gpio
+  spi
+
+BUNDLED WITH
+   2.1.4
