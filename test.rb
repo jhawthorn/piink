@@ -111,25 +111,29 @@ def clear
 end
 
 def display(imageblack, imagered)
-  self.send_command(0x10)
-  total_bytes.times do
-    send_data(0xff)
+  total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
+
+  send_command(0x10)
+  total_bytes.times do |i|
+    send_data(imageblack[i])
   end
-  for i in range(0, int(self.width * self.height / 8)):
-  self.send_data(imageblack[i]);
-        
-        self.send_command(0x13)
-        for i in range(0, int(self.width * self.height / 8)):
-            self.send_data(~imagered[i]);
-        
-        self.send_command(0x12)
-        epdconfig.delay_ms(100)
-        self.ReadBusy()
+
+  send_command(0x13)
+  total_bytes.times do |i|
+    send_data(0xff ^ imagered[i])
+  end
+
+  send_command(0x12)
+  sleep 0.1
+  read_busy()
 end
 
 init
 
 clear
+
+total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
+display([0xf0]*total_bytes, [0x0f]*total_bytes)
 
 
 RPi::GPIO.reset
