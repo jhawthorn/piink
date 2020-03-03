@@ -1,4 +1,6 @@
 require "rpi_gpio"
+require 'chunky_png'
+require "spi"
 
 EPD_WIDTH       = 800
 EPD_HEIGHT      = 480
@@ -8,9 +10,6 @@ RESET_PIN = RST_PIN  = 17
 DC_PIN   = 25
 CS_PIN   = 8
 BUSY_PIN = 24
-
-
-require "spi"
 
 
 RPi::GPIO.set_numbering :bcm
@@ -128,12 +127,43 @@ def display(imageblack, imagered)
   read_busy()
 end
 
+def close_display
+  #SPIDEV.close
+
+  puts("close 5V, Module enters 0 power consumption ...")
+  RPi::GPIO.set_low(RST_PIN)
+  RPi::GPIO.set_low(DC_PIN)
+end
+
+def convert_buffer(buffer)
+  buffer.each_slice(8).map do |values|
+    a = 0
+    values.each do |v|
+      a <<= 1
+      a |= 1 unless v
+    end
+    a
+  end
+end
+
+def display_png(filename)
+  red = ChunkyPNG::Color('red')
+  black = ChunkyPNG::Color('black')
+
+  png = ChunkyPNG::Image.from_file(filename)
+  imageblack = convert_buffer png.pixels.map { |x| x == black }
+  imagered   = convert_buffer png.pixels.map { |x| x == red   }
+  display(imageblack, imagered)
+end
+
 init
 
 clear
 
-total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
-display([0xf0]*total_bytes, [0x0f]*total_bytes)
+display_png(ARGV[0])
+#total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
+#display([0xf0]*total_bytes, [0x0f]*total_bytes)
 
+#close_display
 
 RPi::GPIO.reset
