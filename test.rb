@@ -50,7 +50,7 @@ end
 def read_busy
   puts "e-Paper busy"
   send_command(0x71)
-  while RPi::GPIO.high?(BUSY_PIN)
+  while RPi::GPIO.low?(BUSY_PIN)
     send_command(0x71)
   end
   sleep 0.2
