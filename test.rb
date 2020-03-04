@@ -6,22 +6,29 @@ class Display
   EPD_WIDTH       = 800
   EPD_HEIGHT      = 480
 
-
   RESET_PIN = RST_PIN  = 17
   DC_PIN   = 25
   CS_PIN   = 8
   BUSY_PIN = 24
 
+  def initialize
+    setup_gpio
+    setup_spi
+  end
 
-  RPi::GPIO.set_numbering :bcm
+  def setup_gpio
+    RPi::GPIO.set_numbering :bcm
 
-  RPi::GPIO.setup RST_PIN,  as: :output
-  RPi::GPIO.setup DC_PIN,   as: :output
-  RPi::GPIO.setup CS_PIN,   as: :output
-  RPi::GPIO.setup BUSY_PIN, as: :input
+    RPi::GPIO.setup RST_PIN,  as: :output
+    RPi::GPIO.setup DC_PIN,   as: :output
+    RPi::GPIO.setup CS_PIN,   as: :output
+    RPi::GPIO.setup BUSY_PIN, as: :input
+  end
 
-  SPIDEV = SPI.new(device: '/dev/spidev0.0')
-  SPIDEV.speed=4000000
+  def setup_spi
+    @spidev = SPI.new(device: '/dev/spidev0.0')
+    @spidev.speed=4000000
+  end
 
   def reset
     RPi::GPIO.set_high RESET_PIN
@@ -36,7 +43,7 @@ class Display
   def send_command(command)
     RPi::GPIO.set_low DC_PIN
     RPi::GPIO.set_low CS_PIN
-    SPIDEV.xfer(txdata: [command])
+    @spidev.xfer(txdata: [command])
     RPi::GPIO.set_high CS_PIN
   end
 
@@ -45,7 +52,7 @@ class Display
     RPi::GPIO.set_high DC_PIN
     RPi::GPIO.set_low CS_PIN
     data.each_slice(4096) do |slice|
-      SPIDEV.xfer(txdata: slice)
+      @spidev.xfer(txdata: slice)
     end
     RPi::GPIO.set_high CS_PIN
   end
@@ -135,8 +142,6 @@ class Display
   end
 
   def close_display
-    #SPIDEV.close
-
     puts("close 5V, Module enters 0 power consumption ...")
     RPi::GPIO.set_low(RST_PIN)
     RPi::GPIO.set_low(DC_PIN)
