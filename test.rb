@@ -175,7 +175,7 @@ def run(filename)
   display = Display.new
 
   display.init
-  display.clear
+  #display.clear
 
   PNG.new(filename).write_to(display)
 
