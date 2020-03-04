@@ -40,9 +40,12 @@ def send_command(command)
 end
 
 def send_data(data)
+  data = Array(data)
   RPi::GPIO.set_high DC_PIN
   RPi::GPIO.set_low CS_PIN
-  SPIDEV.xfer(txdata: [data])
+  data.each_slice(4096) do |slice|
+    SPIDEV.xfer(txdata: slice)
+  end
   RPi::GPIO.set_high CS_PIN
 end
 
@@ -95,14 +98,10 @@ def clear
   total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
 
   send_command(0x10)
-  total_bytes.times do
-    send_data(0xff)
-  end
+  send_data([0xff] * total_bytes)
 
   send_command(0x13)
-  total_bytes.times do
-    send_data(0x00)
-  end
+  send_data([0x00] * total_bytes)
 
   send_command(0x12)
   sleep 0.1
@@ -113,14 +112,11 @@ def display(imageblack, imagered)
   total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
 
   send_command(0x10)
-  total_bytes.times do |i|
-    send_data(imageblack[i])
-  end
+  send_data(imageblack)
 
   send_command(0x13)
-  total_bytes.times do |i|
-    send_data(0xff ^ imagered[i])
-  end
+  imagered = imagered.map { |v| 0xff ^ v }
+  send_data(imagered)
 
   send_command(0x12)
   sleep 0.1
