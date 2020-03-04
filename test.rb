@@ -155,12 +155,9 @@ class PNG
 
   def convert_buffer(buffer)
     buffer.each_slice(8).map do |values|
-      a = 0
-      values.each do |v|
-        a <<= 1
-        a |= 1 unless v
+      values.inject(0) do |acc, v|
+        (acc << 1) | (v ? 0 : 1)
       end
-      a
     end
   end
 
