@@ -125,6 +125,14 @@ def display(imageblack, imagered)
   read_busy()
 end
 
+def deep_sleep
+  send_command(0x02) # POWER_OFF
+  read_busy
+
+  send_command(0x07) # DEEP_SLEEP
+  send_data(0xa5)
+end
+
 def close_display
   #SPIDEV.close
 
@@ -159,9 +167,10 @@ def run(filename)
   clear
   display_png(filename)
 
-  RPi::GPIO.reset
+  deep_sleep
+  close_display
 
-  #close_display
+  RPi::GPIO.reset
 end
 
 
