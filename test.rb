@@ -50,13 +50,15 @@ def send_data(data)
 end
 
 def read_busy
-  puts "e-Paper busy"
+  print "Waiting while e-Paper busy..."
+  STDOUT.flush
   send_command(0x71)
   while RPi::GPIO.low?(BUSY_PIN)
+    sleep 0.05
     send_command(0x71)
   end
   sleep 0.2
-  puts "done"
+  puts
 end
 
 def init
