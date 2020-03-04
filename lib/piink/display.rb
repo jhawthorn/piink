@@ -1,3 +1,4 @@
+require "piink/pin"
 require "rpi_gpio"
 require "spi"
 
@@ -19,10 +20,10 @@ module Piink
     def setup_gpio
       RPi::GPIO.set_numbering :bcm
 
-      RPi::GPIO.setup RST_PIN,  as: :output
-      RPi::GPIO.setup DC_PIN,   as: :output
-      RPi::GPIO.setup CS_PIN,   as: :output
-      RPi::GPIO.setup BUSY_PIN, as: :input
+      @reset = Pin::Output.new(RST_PIN)
+      @dc    = Pin::Output.new(DC_PIN)
+      @cs    = Pin::Output.new(CS_PIN)
+      @busy  = Pin::Input.new(BUSY_PIN)
     end
 
     def setup_spi
@@ -31,37 +32,36 @@ module Piink
     end
 
     def reset
-      RPi::GPIO.set_high RESET_PIN
+      @reset.set_high
       sleep 0.2
-      RPi::GPIO.set_low RESET_PIN
+      @reset.set_low
       sleep 0.004
-      RPi::GPIO.set_high RESET_PIN
+      @reset.set_high
       sleep 0.2
     end
 
-
     def send_command(command)
-      RPi::GPIO.set_low DC_PIN
-      RPi::GPIO.set_low CS_PIN
+      @dc.set_low
+      @cs.set_low
       @spidev.xfer(txdata: [command])
-      RPi::GPIO.set_high CS_PIN
+      @cs.set_high
     end
 
     def send_data(data)
       data = Array(data)
-      RPi::GPIO.set_high DC_PIN
-      RPi::GPIO.set_low CS_PIN
+      @dc.set_high
+      @cs.set_low
       data.each_slice(4096) do |slice|
         @spidev.xfer(txdata: slice)
       end
-      RPi::GPIO.set_high CS_PIN
+      @cs.set_high
     end
 
     def read_busy
       print "Waiting while e-Paper busy..."
       STDOUT.flush
       send_command(0x71)
-      while RPi::GPIO.low?(BUSY_PIN)
+      while @busy.low?
         sleep 0.05
         send_command(0x71)
       end
@@ -143,8 +143,8 @@ module Piink
 
     def close_display
       puts("close 5V, Module enters 0 power consumption ...")
-      RPi::GPIO.set_low(RST_PIN)
-      RPi::GPIO.set_low(DC_PIN)
+      @reset.set_low
+      @dc.set_low
     end
   end
 end
