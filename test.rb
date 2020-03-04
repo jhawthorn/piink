@@ -152,14 +152,15 @@ def display_png(filename)
   display(imageblack, imagered)
 end
 
-init
+def run(filename)
+  init
+  clear
+  display_png(filename)
 
-clear
+  RPi::GPIO.reset
 
-display_png(ARGV[0])
-#total_bytes = EPD_WIDTH * EPD_HEIGHT / 8
-#display([0xf0]*total_bytes, [0x0f]*total_bytes)
+  #close_display
+end
 
-#close_display
 
-RPi::GPIO.reset
+run(ARGV.fetch(0))
