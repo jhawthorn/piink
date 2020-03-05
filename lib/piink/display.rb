@@ -1,5 +1,4 @@
 require "piink/pin"
-require "rpi_gpio"
 require "spi"
 
 module Piink
@@ -18,8 +17,6 @@ module Piink
     end
 
     def setup_gpio
-      RPi::GPIO.set_numbering :bcm
-
       @reset = Pin::Output.new(RST_PIN)
       @dc    = Pin::Output.new(DC_PIN)
       @cs    = Pin::Output.new(CS_PIN)

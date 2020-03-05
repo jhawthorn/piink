@@ -1,20 +1,22 @@
-require "rpi_gpio"
+require "mini_gpio"
 
 module Piink
   module Pin
+    GPIO = MiniGPIO.new
+
     class Output
       def initialize(pin)
         @pin = pin
-        RPi::GPIO.setup pin, as: :output
+        GPIO.set_mode pin, MiniGPIO::Modes::OUTPUT
       end
 
       def pull_high
-        RPi::GPIO.set_high @pin
+        GPIO.write @pin, 1
       end
       alias_method :set_high, :pull_high
 
       def pull_low
-        RPi::GPIO.set_low @pin
+        GPIO.write @pin, 0
       end
       alias_method :set_low, :pull_low
 
@@ -34,19 +36,19 @@ module Piink
     class Input
       def initialize(pin)
         @pin = pin
-        RPi::GPIO.setup pin, as: :input
+        GPIO.set_mode pin, MiniGPIO::Modes::INPUT
       end
 
       def high?
-        RPi::GPIO.high?(@pin)
+        value == 1
       end
 
       def low?
-        RPi::GPIO.low?(@pin)
+        value == 0
       end
 
       def value
-        low? ? 0 : 1
+        GPIO.read(@pin)
       end
       alias_method :read, :value
     end

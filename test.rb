@@ -13,8 +13,6 @@ def run(filename)
 
   display.deep_sleep
   display.close_display
-
-  RPi::GPIO.reset
 end
 
 run(ARGV.fetch(0))
