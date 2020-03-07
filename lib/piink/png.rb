@@ -14,12 +14,28 @@ module Piink
       end
     end
 
-    def write_to(display)
-      red = ChunkyPNG::Color('red')
-      black = ChunkyPNG::Color('black')
+    COLORS = {
+      red: ChunkyPNG::Color('red'),
+      black: ChunkyPNG::Color('black'),
+      white: ChunkyPNG::Color('white')
+    }
 
-      imageblack = convert_buffer @png.pixels.map { |x| x == black }
-      imagered   = convert_buffer @png.pixels.map { |x| x == red   }
+    def nearest_color(a)
+      COLORS.min_by do |_, b|
+        r = ChunkyPNG::Color.r(a) - ChunkyPNG::Color.r(b)
+        g = ChunkyPNG::Color.g(a) - ChunkyPNG::Color.g(b)
+        b = ChunkyPNG::Color.b(a) - ChunkyPNG::Color.g(b)
+        r * r + g * g + b * b
+      end[0]
+    end
+
+    def write_to(display)
+      colormap = Hash.new do |h, k|
+        h[k] = nearest_color(k)
+      end
+
+      imageblack = convert_buffer @png.pixels.map { |x| colormap[x] == :black }
+      imagered   = convert_buffer @png.pixels.map { |x| colormap[x] == :red   }
       display.display(imageblack, imagered)
     end
   end
